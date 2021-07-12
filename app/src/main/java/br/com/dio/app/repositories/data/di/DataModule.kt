@@ -1,6 +1,8 @@
 package br.com.dio.app.repositories.data.di
 
 import android.util.Log
+import br.com.dio.app.repositories.data.repositories.RepoRepository
+import br.com.dio.app.repositories.data.repositories.RepoRepositoryImpl
 import br.com.dio.app.repositories.data.services.GitHubService
 import com.google.gson.GsonBuilder
 import okhttp3.OkHttpClient
@@ -15,7 +17,7 @@ object DataModule {
     private const val OK_HTTP = "okHttp"
 
     fun load() {
-        loadKoinModules(networksModules())
+        loadKoinModules(networksModules() + repositoriesModule())
     }
 
     private fun networksModules(): Module {
@@ -42,14 +44,17 @@ object DataModule {
         }
     }
 
+    private fun repositoriesModule(): Module {
+        return module {
+            single<RepoRepository> { RepoRepositoryImpl(get()) }
+        }
+    }
 
-    private inline fun <reified T> createService(client: OkHttpClient, factory: GsonConverterFactory) : T {
+    private inline fun <reified T> createService(client: OkHttpClient, factory: GsonConverterFactory): T {
         return Retrofit.Builder()
             .baseUrl("https://apt.github.com/")
             .client(client)
             .addConverterFactory(factory)
             .build().create(T::class.java)
     }
-
-
 }
